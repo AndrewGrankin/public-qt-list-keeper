@@ -1,4 +1,8 @@
-QT += quick
+TEMPLATE = app
+
+TARGET = ListKeeper
+
+QT += quick qml
 
 CONFIG += c++11
 

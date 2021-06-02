@@ -1,20 +1,28 @@
 #include <QGuiApplication>
-#include <QQmlApplicationEngine>
+#include <QQmlContext>
+#include <QQuickView>
 
 int main(int argc, char *argv[])
 {
-    QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+    QGuiApplication application(argc, argv);
+    QQuickView quickView;
+    QUrl urlAssetsPath;
 
-    QGuiApplication app(argc, argv);
+    #if defined(Q_OS_IOS)
+        urlAssetsPath = QUrl("file://" + qApp->applicationDirPath() + "/");
+    #elif defined(Q_OS_ANDROID)
+        urlAssetsPath = QUrl("assets:/Resources/");
+    #endif
 
-    QQmlApplicationEngine engine;
-    const QUrl url(QStringLiteral("qrc:/main.qml"));
-    QObject::connect(&engine, &QQmlApplicationEngine::objectCreated,
-                     &app, [url](QObject *obj, const QUrl &objUrl) {
-        if (!obj && url == objUrl)
-            QCoreApplication::exit(-1);
-    }, Qt::QueuedConnection);
-    engine.load(url);
+    quickView.rootContext()->setContextProperty("assetsPath", urlAssetsPath);
+    quickView.setSource(QUrl("qrc:/main.qml"));
+    quickView.setResizeMode(QQuickView::SizeRootObjectToView);
 
-    return app.exec();
+    #if defined(Q_OS_IOS)
+        quickView.showFullScreen();
+    #else
+        quickView.show();
+    #endif
+
+    return application.exec();
 }
